@@ -34,6 +34,7 @@ define Package/miniupnpd/Default
 	+IPV6:libip6tc \
 	+iptables \
 	+libcap-ng \
+	+curl \
 	+libip4tc \
 	+libmnl \
 	+libnetfilter-conntrack \
