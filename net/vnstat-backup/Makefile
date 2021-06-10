@@ -12,16 +12,27 @@ PKG_VERSION:=0.1
 PKG_RELEASE:=1
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/vnstat-backup-$(PKG_VERSION)
-PKG_INSTALL:=1
 
-PKG_BUILD_DEPENDS:=vnstat
+PKG_FIXUP:=autoreconf
+PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
+
+include $(INCLUDE_DIR)/package.mk
 
 define Package/vnstat-backup/Default
   SECTION:=net
   CATEGORY:=Network
+  DEPENDS:=+vnstat +vnstati
+endef
+
+define Package/vnstat-backup
+$(call Package/vnstat-backup/Default)
   TITLE:=vnstat stats file backup script
-  SUBMENU:=Firewall
+endef
+
+define Package/vnstat-backup/description
+	vnStat-backup is a tool to make backups of stats files 
+	local or remotelly, using ftp.
 endef
 
 define Package/vnstat-backup/conffiles
