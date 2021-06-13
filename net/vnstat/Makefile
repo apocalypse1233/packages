@@ -26,6 +26,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/vnstat/Default
   SECTION:=net
   CATEGORY:=Network
+  DEPENDS:=+lftp
   URL:=http://humdi.net/vnstat/
 endef
 
@@ -58,6 +59,7 @@ endef
 define Package/vnstat/conffiles
 /etc/vnstat.conf
 /etc/config/vnstat
+/etc/vnstat_backup.conf
 endef
 
 define Build/Compile/vnstat
@@ -87,10 +89,12 @@ define Package/vnstat/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/sbin/vnstatd $(1)/usr/sbin/
 	$(INSTALL_DIR) $(1)/etc
 	$(INSTALL_CONF) $(PKG_BUILD_DIR)/cfg/vnstat.conf $(1)/etc/
+	$(INSTALL_CONF) ./files/vnstat_backup.conf $(1)/etc/vnstat_backup.conf
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) ./files/vnstat.config $(1)/etc/config/vnstat
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/vnstat.init $(1)/etc/init.d/vnstat
+	$(INSTALL_BIN) ./files/vnstat_backup.init $(1)/etc/init.d/vnstat_backup
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
 	$(INSTALL_BIN) ./files/vnstat.defaults $(1)/etc/uci-defaults/vnstat
 endef
