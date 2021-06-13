@@ -22,7 +22,7 @@ include $(INCLUDE_DIR)/package.mk
 define Package/vnstat-backup/Default
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=+vnstat +vnstati
+  DEPENDS:=+vnstat +vnstati +lftp
 endef
 
 define Package/vnstat-backup
