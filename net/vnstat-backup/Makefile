@@ -11,23 +11,19 @@ PKG_NAME:=vnstat-backup
 PKG_VERSION:=0.1
 PKG_RELEASE:=1
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/vnstat-backup-$(PKG_VERSION)
+# PKG_BUILD_DIR:=$(BUILD_DIR)/vnstat-backup-$(PKG_VERSION)
 
-PKG_FIXUP:=autoreconf
-PKG_INSTALL:=1
-PKG_BUILD_PARALLEL:=1
+# PKG_FIXUP:=autoreconf
+# PKG_INSTALL:=1
+# PKG_BUILD_PARALLEL:=1
 
 include $(INCLUDE_DIR)/package.mk
 
-define Package/vnstat-backup/Default
+define Package/vnstat-backup
   SECTION:=net
   CATEGORY:=Network
-  DEPENDS:=+vnstat +vnstati +lftp
-endef
-
-define Package/vnstat-backup
-$(call Package/vnstat-backup/Default)
   TITLE:=vnstat stats file backup script
+  DEPENDS:=+vnstat +vnstati +lftp
 endef
 
 define Package/vnstat-backup/description
@@ -40,10 +36,18 @@ define Package/vnstat-backup/conffiles
 endef
 
 define Package/vnstat-backup/install
-	$(INSTALL_DIR) $(1)/etc
-	$(INSTALL_CONF) ./files/vnstat_backup.conf $(1)/etc/vnstat_backup.conf
-	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_DIR) $(1)/etc/init.d $(1)/etc
 	$(INSTALL_BIN) ./files/vnstat_backup.init $(1)/etc/init.d/vnstat_backup
+	$(INSTALL_CONF) ./files/vnstat_backup.conf $(1)/etc/vnstat_backup.conf
+endef
+
+define Package/vnstat-backup/postinst
+	#!/bin/sh
+	# check if we are on real system
+	if [ -z "$${IPKG_INSTROOT}" ]; then
+		/etc/init.d/vnstat_backup enable
+	fi
+	exit 0
 endef
 
 $(eval $(call BuildPackage,vnstat-backup))
