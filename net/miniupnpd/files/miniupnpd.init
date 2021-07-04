@@ -61,8 +61,8 @@ upnpd() {
 	local upload download log_output port config_file serial_number model_number
 	local use_stun stun_host stun_port uuid notify_interval presentation_url
 	local upnp_lease_file clean_ruleset_threshold clean_ruleset_interval
+	local igdv1
 	local ipv6_disable
-	local ext_ip_reserved_ignore
 
 	local enabled
 	config_get_bool enabled config enabled 1
