@@ -88,3 +88,4 @@ backup() {
 restore() {
 	restore_database
 }
+
