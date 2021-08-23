@@ -81,6 +81,7 @@ static bool retry = false;
 static char *board_name = NULL;
 static char *target = NULL;
 static char *distribution = NULL, *version = NULL, *revision = NULL;
+static char *rootfs_type = NULL;
 static int uptodate;
 static char *filename = NULL;
 static int rc;
@@ -126,12 +127,14 @@ static int debug = 0;
 enum {
 	BOARD_BOARD_NAME,
 	BOARD_RELEASE,
+	BOARD_ROOTFS_TYPE,
 	__BOARD_MAX,
 };
 
 static const struct blobmsg_policy board_policy[__BOARD_MAX] = {
 	[BOARD_BOARD_NAME] = { .name = "board_name", .type = BLOBMSG_TYPE_STRING },
 	[BOARD_RELEASE] = { .name = "release", .type = BLOBMSG_TYPE_TABLE },
+	[BOARD_ROOTFS_TYPE] = { .name = "rootfs_type", .type = BLOBMSG_TYPE_STRING },
 };
 
 /*
@@ -314,6 +317,7 @@ enum {
 	H_LEN,
 	H_RANGE,
 	H_UNKNOWN_PACKAGE,
+	H_QUEUE_POSITION,
 	__H_MAX
 };
 
@@ -321,6 +325,7 @@ static const struct blobmsg_policy header_policy[__H_MAX] = {
 	[H_LEN] = { .name = "content-length", .type = BLOBMSG_TYPE_STRING },
 	[H_RANGE] = { .name = "content-range", .type = BLOBMSG_TYPE_STRING },
 	[H_UNKNOWN_PACKAGE] = { .name = "x-unknown-package", .type = BLOBMSG_TYPE_STRING },
+	[H_QUEUE_POSITION] = { .name = "x-queue-position", .type = BLOBMSG_TYPE_INT32 },
 };
 
 /*
@@ -412,6 +417,38 @@ static int verrevcmp(const char *val, const char *ref)
 			return first_diff;
 	}
 	return 0;
+}
+
+/*
+ * replace '-rc' by '~' in string
+ */
+static inline void release_replace_rc(char *ver)
+{
+	char *tmp;
+
+	tmp = strstr(ver, "-rc");
+	if (tmp && strlen(tmp) > 3) {
+		*tmp = '~';
+		strcpy(tmp + 1, tmp + 3);
+	}
+}
+
+/*
+ * OpenWrt release version string comperator
+ * replaces '-rc' by '~' to fix ordering of release(s) (candidates)
+ * using the void release_replace_rc(char *ver) function above.
+ */
+static int openwrt_release_verrevcmp(const char *ver1, const char *ver2)
+{
+	char mver1[16], mver2[16];
+
+	strncpy(mver1, ver1, sizeof(mver1) - 1);
+	strncpy(mver2, ver2, sizeof(mver2) - 1);
+
+	release_replace_rc(mver1);
+	release_replace_rc(mver2);
+
+	return verrevcmp(mver1, mver2);
 }
 
 
@@ -571,6 +608,9 @@ static void board_cb(struct ubus_request *req, int type, struct blob_attr *msg) 
 		board_name = strdup(blobmsg_get_string(tb[BOARD_BOARD_NAME]));
 	}
 
+	if (tb[BOARD_ROOTFS_TYPE])
+		rootfs_type = strdup(blobmsg_get_string(tb[BOARD_ROOTFS_TYPE]));
+
 	blobmsg_add_string(buf, "distro", distribution);
 	blobmsg_add_string(buf, "target", target);
 	blobmsg_add_string(buf, "version", version);
@@ -661,6 +701,12 @@ static void request_done(struct uclient *cl)
 static void header_done_cb(struct uclient *cl)
 {
 	struct blob_attr *tb[__H_MAX];
+	struct jsonblobber *jsb = (struct jsonblobber *)cl->priv;
+	struct blob_buf *outbuf = NULL;
+
+	if (jsb)
+		outbuf = jsb->outbuf;
+
 	uint64_t resume_offset = 0, resume_end, resume_size;
 
 	if (uclient_http_redirect(cl)) {
@@ -740,10 +786,20 @@ static void header_done_cb(struct uclient *cl)
 			fprintf(stderr, "Content-Range header is invalid\n");
 			break;
 		}
+	case 201:
 	case 202:
 		retry = true;
+		if (!outbuf)
+			break;
+
+		blobmsg_add_u32(outbuf, "status", cl->status_code);
+
+		if (tb[H_QUEUE_POSITION])
+			blobmsg_add_u32(outbuf, "queue_position", blobmsg_get_u32(tb[H_QUEUE_POSITION]));
+
 		break;
 	case 200:
+		retry = false;
 		if (cl->priv)
 			break;
 
@@ -1116,7 +1172,6 @@ static void process_branch(struct blob_attr *branch, bool only_active)
 	blobmsg_for_each_attr(curver, tb[BRANCH_VERSIONS], remver) {
 		br = malloc(sizeof(struct branch));
 
-		br->snapshot = tb[BRANCH_SNAPSHOT] && blobmsg_get_bool(tb[BRANCH_SNAPSHOT]);
 		if (tb[BRANCH_GIT_BRANCH])
 			br->git_branch = strdup(blobmsg_get_string(tb[BRANCH_GIT_BRANCH]));
 
@@ -1132,6 +1187,7 @@ static void process_branch(struct blob_attr *branch, bool only_active)
 		json_to_string_arrays(tb[BRANCH_EXTRA_REPOS], &br->extra_repos, &br->extra_repos_names);
 
 		br->version = strdup(blobmsg_get_string(curver));
+		br->snapshot = !!strcasestr(blobmsg_get_string(curver), "snapshot");
 		br->path = alloc_replace_var(blobmsg_get_string(tb[BRANCH_PATH]), "version", br->version);
 		br->path_packages = alloc_replace_var(blobmsg_get_string(tb[BRANCH_PATH_PACKAGES]), "branch", br->name);
 		br->arch_packages = arch_packages;
@@ -1164,6 +1220,7 @@ static int request_branches(bool only_active)
 	struct blob_attr *tb[__REPLY_MAX];
 	int rem;
 	char url[256];
+	struct blob_attr *data;
 
 	blobmsg_buf_init(&brbuf);
 	snprintf(url, sizeof(url), "%s/%s/%s%s", serverurl, API_JSON,
@@ -1176,10 +1233,16 @@ static int request_branches(bool only_active)
 
 	blobmsg_parse(reply_policy, __REPLY_MAX, tb, blob_data(brbuf.head), blob_len(brbuf.head));
 
-	if (!tb[REPLY_ARRAY])
+	/* newer server API replies OBJECT, older API replies ARRAY... */
+	if ((!tb[REPLY_ARRAY] && !tb[REPLY_OBJECT]))
 		return -ENODATA;
 
-	blobmsg_for_each_attr(cur, tb[REPLY_ARRAY], rem)
+	if (tb[REPLY_OBJECT])
+		data = tb[REPLY_OBJECT];
+	else
+		data = tb[REPLY_ARRAY];
+
+	blobmsg_for_each_attr(cur, data, rem)
 		process_branch(cur, only_active);
 
 	blob_buf_free(&brbuf);
@@ -1196,8 +1259,7 @@ static struct branch *select_branch(char *name, char *select_version)
 
 	list_for_each_entry(br, &branches, list) {
 		/* if branch name doesn't match version *prefix*, skip */
-		fprintf(stderr, "checking branch %s for %s\n", br->name, name);
-		if (strncmp(br->name, name, strlen(br->name)))
+		if (strncasecmp(br->name, name, strlen(br->name)))
 			continue;
 
 		if (select_version) {
@@ -1206,14 +1268,18 @@ static struct branch *select_branch(char *name, char *select_version)
 				break;
 			}
 		} else {
-			/* if we are on a snapshot branch, stay there */
 			if (strcasestr(name, "snapshot")) {
-				if (strcasestr(br->version, "snapshot")) {
+				/* if we are on the snapshot branch, stay there */
+				if (br->snapshot) {
 					abr = br;
 					break;
 				}
 			} else {
-				if (!abr || (verrevcmp(br->version, abr->version) > 0))
+				/* on release branch, skip snapshots and pick latest release */
+				if (br->snapshot)
+					continue;
+
+				if (!abr || (openwrt_release_verrevcmp(abr->version, br->version) < 0))
 					abr = br;
 			}
 		}
@@ -1374,7 +1440,7 @@ static int system_is_efi(void)
 static inline int system_is_efi(void) { return 0; }
 #endif
 
-static int get_image_by_type(struct blob_attr *images, const char *typestr, char **image_name, char **image_sha256)
+static int get_image_by_type(struct blob_attr *images, const char *typestr, const char *fstype, char **image_name, char **image_sha256)
 {
 	struct blob_attr *tb[__IMAGES_MAX];
 	struct blob_attr *cur;
@@ -1388,6 +1454,9 @@ static int get_image_by_type(struct blob_attr *images, const char *typestr, char
 		    !tb[IMAGES_SHA256])
 			continue;
 
+		if (fstype && strcmp(blobmsg_get_string(tb[IMAGES_FILESYSTEM]), fstype))
+			continue;
+
 		if (!strcmp(blobmsg_get_string(tb[IMAGES_TYPE]), typestr)) {
 			*image_name = strdup(blobmsg_get_string(tb[IMAGES_NAME]));
 			*image_sha256 = strdup(blobmsg_get_string(tb[IMAGES_SHA256]));
@@ -1399,10 +1468,14 @@ static int get_image_by_type(struct blob_attr *images, const char *typestr, char
 	return ret;
 }
 
-static int select_image(struct blob_attr *images, char **image_name, char **image_sha256)
+static int select_image(struct blob_attr *images, const char *target_fstype, char **image_name, char **image_sha256)
 {
 	const char *combined_type;
-	int ret;
+	const char *fstype = rootfs_type;
+	int ret = -ENOENT;
+
+	if (target_fstype)
+		fstype = target_fstype;
 
 	if (system_is_efi())
 		combined_type = "combined-efi";
@@ -1411,11 +1484,24 @@ static int select_image(struct blob_attr *images, char **image_name, char **imag
 
 	DPRINTF("images: %s\n", blobmsg_format_json_indent(images, true, 0));
 
-	ret = get_image_by_type(images, "sysupgrade", image_name, image_sha256);
-	if (!ret)
-		return 0;
+	if (fstype) {
+		ret = get_image_by_type(images, "sysupgrade", fstype, image_name, image_sha256);
+		if (!ret)
+			return 0;
 
-	ret = get_image_by_type(images, combined_type, image_name, image_sha256);
+		ret = get_image_by_type(images, combined_type, fstype, image_name, image_sha256);
+		if (!ret)
+			return 0;
+	}
+
+	/* fallback to squashfs unless fstype requested explicitly */
+	if (!target_fstype) {
+		ret = get_image_by_type(images, "sysupgrade", "squashfs", image_name, image_sha256);
+		if (!ret)
+			return 0;
+
+		ret = get_image_by_type(images, combined_type, "squashfs", image_name, image_sha256);
+	}
 
 	return ret;
 }
@@ -1465,7 +1551,8 @@ int main(int args, char *argv[]) {
 	uint32_t id;
 	int valid;
 	char url[256];
-	char *sanetized_board_name, *image_name, *image_sha256, *target_branch = NULL, *target_version = NULL, *tmp;
+	char *sanetized_board_name, *image_name, *image_sha256, *tmp;
+	char *target_branch = NULL, *target_version = NULL, *target_fstype = NULL;
 	struct blob_attr *tbr[__REPLY_MAX];
 	struct blob_attr *tb[__TARGET_MAX] = {}; /* make sure tb is NULL initialized even if blobmsg_parse isn't called */
 	struct stat imgstat;
@@ -1500,6 +1587,7 @@ int main(int args, char *argv[]) {
 			fprintf(stdout, " -f\t\tuse force\n");
 			fprintf(stdout, " -h\t\toutput help\n");
 			fprintf(stdout, " -r\t\tcheck only for release upgrades\n");
+			fprintf(stdout, " -F <fstype>\toverride filesystem type\n");
 			fprintf(stdout, " -y\t\tdon't wait for user confirmation\n");
 			return 0;
 		}
@@ -1524,6 +1612,11 @@ int main(int args, char *argv[]) {
 
 		if (!strncmp(argv[argc], "-f", 3))
 			force = true;
+
+		if (!strncmp(argv[argc], "-F", 3)) {
+			target_fstype = argv[argc + 1];
+			addargs = 1;
+		}
 
 		if (!strncmp(argv[argc], "-r", 3))
 			release_only = true;
@@ -1580,10 +1673,13 @@ int main(int args, char *argv[]) {
 		goto freebufs;
 	}
 
-	fprintf(stdout, "Running: %s %s on %s (%s)\n", version, revision, target, board_name);
-	fprintf(stdout, "Server:  %s\n", serverurl);
+	fprintf(stdout, "Server:    %s\n", serverurl);
+	fprintf(stdout, "Running:   %s %s on %s (%s)\n", version, revision, target, board_name);
+	if (target_fstype && rootfs_type && strcmp(rootfs_type, target_fstype))
+		fprintf(stderr, "WARNING: will change rootfs type from '%s' to '%s'\n",
+			rootfs_type, target_fstype);
 
-	if (request_branches(!target_branch)) {
+	if (request_branches(!(target_branch || target_version))) {
 		rc=-ENETUNREACH;
 		goto freeboard;
 	}
@@ -1596,7 +1692,7 @@ int main(int args, char *argv[]) {
 
 	fprintf(stdout, "Available: %s %s\n", branch->version_number, branch->version_code);
 
-	revcmp = strcmp(revision, branch->version_code);
+	revcmp = openwrt_release_verrevcmp(revision, branch->version_code);
 	if (revcmp < 0)
 			upg_check |= PKG_UPGRADE;
 	else if (revcmp > 0)
@@ -1615,6 +1711,7 @@ int main(int args, char *argv[]) {
 		rc=-ENOPKG;
 		goto freebranches;
 	}
+
 	if (!upg_check && !force) {
 		fprintf(stderr, "Nothing to be updated. Use '-f' to force.\n");
 		rc=0;
@@ -1668,8 +1765,15 @@ int main(int args, char *argv[]) {
 
 		blobmsg_parse(target_policy, __TARGET_MAX, tb, blobmsg_data(tbr[REPLY_OBJECT]), blobmsg_len(tbr[REPLY_OBJECT]));
 
-		if (tb[TARGET_REQUEST_HASH] && tb[TARGET_STATUS]) {
-			if (status_delay(blobmsg_get_string(tb[TARGET_STATUS]))) {
+		/* for compatibility with old server version, also support status in 200 reply */
+		if (tb[TARGET_STATUS]) {
+			tmp = blobmsg_get_string(tb[TARGET_STATUS]);
+			if (status_delay(tmp))
+				retry = 1;
+		}
+
+		if (tb[TARGET_REQUEST_HASH]) {
+			if (retry) {
 				if (!retry_delay)
 					fputs("Requesting build", stderr);
 
@@ -1696,7 +1800,6 @@ int main(int args, char *argv[]) {
 					 blobmsg_get_string(tb[TARGET_REQUEST_HASH]));
 				DPRINTF("polling via GET %s\n", url);
 			}
-			retry = true;
 			use_get = true;
 		} else if (retry_delay) {
 			fputc('\n', stderr);
@@ -1726,7 +1829,7 @@ int main(int args, char *argv[]) {
 		goto freebranches;
 	}
 
-	if ((rc = select_image(tb[TARGET_IMAGES], &image_name, &image_sha256)))
+	if ((rc = select_image(tb[TARGET_IMAGES], target_fstype, &image_name, &image_sha256)))
 		goto freebranches;
 
 	snprintf(url, sizeof(url), "%s/%s/%s/%s", serverurl, API_STORE,
@@ -1807,6 +1910,9 @@ freebranches:
 
 	/* ToDo */
 freeboard:
+	if (rootfs_type)
+		free(rootfs_type);
+
 	free(board_name);
 	free(target);
 	free(distribution);
