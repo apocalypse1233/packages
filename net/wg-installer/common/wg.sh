@@ -15,11 +15,13 @@ next_port () {
 }
 
 cleanup_wginterfaces() {
-    neighbors_available
+    check_wg_neighbors
 }
 
 delete_wg_interface() {
     ip link del dev "$1"
+    [ -f "/tmp/run/wgserver/$1.key" ] && rm "/tmp/run/wgserver/$1.key"
+    [ -f "/tmp/run/wgserver/$1.pub" ] && rm "/tmp/run/wgserver/$1.pub"
 }
 
 check_wg_neighbors() {
