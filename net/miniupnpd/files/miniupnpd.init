@@ -144,6 +144,10 @@ upnpd() {
 		upnpd_write_bool use_stun 0 ext_perform_stun
 		upnpd_write_bool ipv6_disable $ipv6_disable
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+		upnpd_write_bool ext_ip_reserved_ignore $ext_ip_reserved_ignore
+>>>>>>> parent of a9fa3e712 (Add sequence to detect WAN IP with curl)
 =======
 		upnpd_write_bool ext_ip_reserved_ignore $ext_ip_reserved_ignore
 >>>>>>> parent of a9fa3e712 (Add sequence to detect WAN IP with curl)
