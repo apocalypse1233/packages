@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=miniupnpd
 PKG_VERSION:=2.2.2
-PKG_RELEASE:=2
+PKG_RELEASE:=3
 
 PKG_SOURCE_URL:=https://miniupnp.tuxfamily.org/files
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
@@ -34,6 +34,7 @@ define Package/miniupnpd/Default
 	+IPV6:libip6tc \
 	+iptables \
 	+libcap-ng \
+	+curl \
 	+libip4tc \
 	+libmnl \
 	+libnetfilter-conntrack \
