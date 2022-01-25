@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pdns-recursor
-PKG_VERSION:=4.5.5
+PKG_VERSION:=4.6.0
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://downloads.powerdns.com/releases/
-PKG_HASH:=a836a39b99fcc21873e4ba3a60aa9915a33fac7b44922696e9a257f551fe05fb
+PKG_HASH:=df06559398aebc594d2e1e27d177f981bdbbc17f968d6306a52aa7d1119fbcf2
 
 PKG_MAINTAINER:=Peter van Dijk <peter.van.dijk@powerdns.com>
 PKG_LICENCE:=GPL-2.0-only
@@ -25,7 +25,7 @@ define Package/pdns-recursor
   SUBMENU:=IP Addresses and Names
   USERID:=pdns:pdns
   TITLE:=PowerDNS Recursor
-  DEPENDS:=+boost +boost-context +boost-filesystem +libatomic +liblua +libopenssl +libfstrm
+  DEPENDS:=+boost +boost-context +boost-filesystem +libatomic +liblua +libopenssl +libfstrm +libcurl
   URL:=https://www.powerdns.com/recursor.html
 endef
 
@@ -48,6 +48,7 @@ CONFIGURE_ARGS += \
 	--without-libcap \
 	--without-libsodium \
 	--without-net-snmp \
+	--enable-dns-over-tls \
 	--enable-reproducible \
 	--disable-silent-rules
 

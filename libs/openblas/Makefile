@@ -5,12 +5,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=OpenBLAS
-PKG_VERSION:=0.3.17
+PKG_VERSION:=0.3.19
 PKG_RELEASE:=$(AUTORELEASE)
 
 PKG_SOURCE:=OpenBLAS-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/xianyi/OpenBLAS/releases/download/v$(PKG_VERSION)/
-PKG_HASH:=df2934fa33d04fd84d839ca698280df55c690c86a5a1133b3f7266fce1de279f
+PKG_HASH:=947f51bfe50c2a0749304fbe373e00e7637600b0a47b78a51382aeb30ca08562
 PKG_LICENSE:=BSD 3-Clause
 PKG_MAINTAINER:=Alexandru Ardelean <ardeleanalex@gmail.com>
 
@@ -58,13 +58,9 @@ ifeq ($(ARCH),aarch64)
 else ifeq ($(ARCH),arm)
   OPENBLAS_TARGET:=ARMV5
 else ifeq ($(ARCH),mips)
-  ifeq ($(CPU_TYPE),24kc)
-    OPENBLAS_TARGET:=MIPS24K
-  endif # CPU_TYPE == 24kc
+  OPENBLAS_TARGET:=MIPS24K
 else ifeq ($(ARCH),mipsel)
-  ifeq ($(CPU_TYPE),24kc)
-    OPENBLAS_TARGET:=MIPS24K
-  endif # CPU_TYPE == 24kc
+  OPENBLAS_TARGET:=MIPS24K
 else ifeq ($(ARCH),powerpc)
   OPENBLAS_TARGET:=PPC440
 endif
@@ -81,6 +77,7 @@ MAKE_FLAGS += \
 	HOSTCC=$(HOSTCC_NOCACHE) \
 	CROSS_SUFFIX=$(TARGET_CROSS) \
 	BINARY=$(OPENBLAS_BINARY) \
+	MAKE_NB_JOBS=-1 \
 	NUM_THREADS=2 \
 	PREFIX=/usr \
 	COMMON_OPT="" \

@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=podman
-PKG_VERSION:=3.3.1
+PKG_VERSION:=3.4.4
 PKG_RELEASE:=$(AUTORELEASE)
-PKG_HASH:=6e3c57f5fd4199bc7603effb8c34268ee7f65fcd30c7b0d4778396b69388ae1f
 
-PKG_SOURCE_URL:=https://github.com/containers/podman/archive/v$(PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_URL:=https://github.com/containers/podman/archive/v$(PKG_VERSION)
+PKG_HASH:=718c9e1e734c2d374fcf3c59e4cc7c1755acb954fc7565093e1d636c04b72e3a
 
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
@@ -69,11 +69,11 @@ define Package/podman-selinux/description
 endef
 
 define Package/podman/conffiles
-  /etc/containers/policy.json
-  /etc/containers/storage.conf
-  /etc/containers/registries.conf
-  /etc/containers/containers.conf
-  /etc/cni/net.d/87-podman-bridge.conflist
+/etc/containers/policy.json
+/etc/containers/storage.conf
+/etc/containers/registries.conf
+/etc/containers/containers.conf
+/etc/cni/net.d/87-podman-bridge.conflist
 endef
 
 Package/podman-selinux/conffiles = $(Package/podman/conffiles)
