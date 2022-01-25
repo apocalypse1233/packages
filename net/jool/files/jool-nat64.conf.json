@@ -1,7 +1,8 @@
 {
 	"comment": "Sample full NAT64 configuration.",
+	"comment": "Configuration details at https://jool.mx/en/usr-flags-global.html",
 
-	"instance": "instance name",
+	"instance": "default",
 	"framework": "netfilter",
 
 	"global": {
@@ -9,32 +10,32 @@
 
 		"manually-enabled": false,
 
-		"zeroize-traffic-class": true,
+		"zeroize-traffic-class": false,
 		"override-tos": false,
-		"tos": 254,
-		"mtu-plateaus": [1, 2, 3, 4, 5, 6],
-		"maximum-simultaneous-opens": 16,
+		"tos": 0,
+		"mtu-plateaus": [65535, 32000, 17914, 8166, 4352, 2002, 1492, 1006, 508, 296, 68],
+		"maximum-simultaneous-opens": 10,
 		"source-icmpv6-errors-better": true,
-		"handle-rst-during-fin-rcv": true,
-		"f-args": 10,
+		"handle-rst-during-fin-rcv": false,
+		"f-args": 11,
 
-		"logging-bib": true,
-		"logging-session": true,
+		"logging-bib": false,
+		"logging-session": false,
 
-		"address-dependent-filtering": true,
-		"drop-icmpv6-info": true,
-		"drop-externally-initiated-tcp": true,
+		"address-dependent-filtering": false,
+		"drop-icmpv6-info": false,
+		"drop-externally-initiated-tcp": false,
 
-		"udp-timeout": "1:00:00",
-		"tcp-est-timeout": "10:00:00",
-		"tcp-trans-timeout": "5:00",
-		"icmp-timeout": "5:30",
+		"udp-timeout": "5:00",
+		"tcp-est-timeout": "2:00:00",
+		"tcp-trans-timeout": "4:00",
+		"icmp-timeout": "1:00",
 
-		"ss-enabled": true,
-		"ss-flush-asap": false,
-		"ss-flush-deadline": 1000,
-		"ss-capacity": 256,
-		"ss-max-payload": 600
+		"ss-enabled": false,
+		"ss-flush-asap": true,
+		"ss-flush-deadline": 2000,
+		"ss-capacity": 512,
+		"ss-max-payload": 1452
 	},
 
 	"pool4": [
