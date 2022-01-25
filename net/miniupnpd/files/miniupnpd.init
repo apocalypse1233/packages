@@ -141,7 +141,7 @@ upnpd() {
 		if [ -n "$external_ip" ]; then
 			logger -t miniupnpd -p info "Using static external IP: $external_ip"
 			echo "ext_ip=$external_ip"
-		elif [ $if_ip != $wan_ip ]; then
+		else if [ $if_ip != $wan_ip ]; then
 			logger -t miniupnpd -p info "Using external WAN IP: $wan_ip"
 			echo "ext_ip=$wan_ip"
 		else
