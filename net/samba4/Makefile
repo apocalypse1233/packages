@@ -15,7 +15,6 @@ PKG_SOURCE_URL:= \
 		https://download.samba.org/pub/samba/stable/
 PKG_HASH:=155d9c2dfb06a18104422987590858bfe5e9783ebebe63882e7e7f07eaaa512d
 
-PKG_MAINTAINER:=Andy Walsh <andy.walsh44+github@gmail.com>
 PKG_LICENSE:=GPL-3.0-only
 PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:samba:samba
@@ -350,6 +349,9 @@ ifeq ($(CONFIG_SAMBA4_SERVER_AD_DC),)
 	$(SED) '/"dns.resolver":/d' $(PKG_BUILD_DIR)/third_party/wscript
 	# unbundle iso8601
 	$(SED) '/"iso8601":/d' $(PKG_BUILD_DIR)/third_party/wscript
+endif
+ifeq ($(CONFIG_HOST_OS_MACOS),y)
+	$(SED) "/^VERSION=/i sys.platform='linux'" $(PKG_BUILD_DIR)/buildtools/bin/waf
 endif
 endef
 
