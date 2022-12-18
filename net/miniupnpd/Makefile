@@ -38,7 +38,8 @@ define Package/miniupnpd/Default
   DEPENDS:= \
 	+libcap-ng \
 	+libmnl \
-	+libuuid
+	+libuuid \
+	+curl
   PROVIDES:=miniupnpd
   TITLE:=Lightweight UPnP IGD, NAT-PMP & PCP daemon
   SUBMENU:=Firewall
