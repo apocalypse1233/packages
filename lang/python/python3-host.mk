@@ -11,6 +11,7 @@
 # For PYTHON3_VERSION
 python3_mk_path:=$(dir $(lastword $(MAKEFILE_LIST)))
 include $(python3_mk_path)python3-version.mk
+include $(python3_mk_path)../rust/rust-values.mk
 
 # Unset environment variables
 
@@ -76,7 +77,9 @@ HOST_PYTHON3_VARS = \
 	LDSHARED="$(HOSTCC) -shared" \
 	CFLAGS="$(HOST_CFLAGS)" \
 	CPPFLAGS="$(HOST_CPPFLAGS) -I$(HOST_PYTHON3_INC_DIR)" \
-	LDFLAGS="$(HOST_LDFLAGS) -lpython$(PYTHON3_VERSION) -Wl$(comma)-rpath$(comma)$(STAGING_DIR_HOSTPKG)/lib"
+	LDFLAGS="$(HOST_LDFLAGS) -lpython$(PYTHON3_VERSION) -Wl$(comma)-rpath$(comma)$(STAGING_DIR_HOSTPKG)/lib" \
+	$(CARGO_HOST_CONFIG_VARS) \
+	SETUPTOOLS_RUST_CARGO_PROFILE="$(CARGO_HOST_PROFILE)"
 
 # $(1) => directory of python script
 # $(2) => python script and its arguments
@@ -97,12 +100,6 @@ HOST_PYTHON3_PIP_VARS:= \
 	PIP_CACHE_DIR="$(HOST_PYTHON3_PIP_CACHE_DIR)" \
 	PIP_CONFIG_FILE=/dev/null \
 	PIP_DISABLE_PIP_VERSION_CHECK=1
-
-define SetupPyShim
-	if [ -f $(1)/pyproject.toml ] && [ ! -f $(1)/setup.py ] ; then \
-		$(CP) $(python3_mk_path)setup.py.shim $(1)setup.py ; \
-	fi
-endef
 
 # Multiple concurrent pip processes can lead to errors or unexpected results: https://github.com/pypa/pip/issues/2361
 # $(1) => packages to install

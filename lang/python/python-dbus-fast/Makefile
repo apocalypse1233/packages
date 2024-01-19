@@ -7,16 +7,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=python-dbus-fast
-PKG_VERSION:=1.84.2
+PKG_VERSION:=2.21.0
 PKG_RELEASE:=1
 
 PYPI_NAME:=dbus-fast
 PYPI_SOURCE_NAME:=dbus_fast
-PKG_HASH:=62b00b85c5835bff1d7ab5b12d494e588d92612bedbd7ca86176861729b8e4bc
+PKG_HASH:=f582f6f16791ced6067dab325fae444edf7ce0704315b90c2a473090636a6fe0
 
 PKG_MAINTAINER:=Quintin Hill <stuff@quintin.me.uk>
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
+
+PKG_BUILD_DEPENDS:=python-poetry-core/host python-cython/host python-wheel/host
 
 include ../pypi.mk
 include $(INCLUDE_DIR)/package.mk

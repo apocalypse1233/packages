@@ -6,12 +6,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=crowdsec
-PKG_VERSION:=1.4.6
+PKG_VERSION:=1.5.5
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/crowdsecurity/crowdsec/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=acec1560593da78e37acbf44f2337a1e3026646ece00ab02eded78f71a2adda3
+PKG_HASH:=ec7b2815405be4c3a1c9c3dcb1110030c29b7408dbf2a82d25537843c8831329
 
 PKG_LICENSE:=MIT
 PKG_LICENSE_FILES:=LICENSE
@@ -29,7 +29,7 @@ CWD_BUILD_CODENAME:=alphaga
 CWD_BUILD_TIMESTAMP:=$(shell date +%F"_"%T)
 CWD_BUILD_TAG:=openwrt-$(PKG_VERSION)-$(PKG_RELEASE)
 
-CWD_VERSION_PKG:=github.com/crowdsecurity/crowdsec/pkg/cwversion
+CWD_VERSION_PKG:=github.com/crowdsecurity/go-cs-lib/version
 
 GO_PKG:=github.com/crowdsecurity/crowdsec
 GO_PKG_INSTALL_ALL:=1
@@ -81,6 +81,10 @@ $(call Package/crowdsec/Default/description)
 
   This package provides the source files for the program.
 endef
+
+ifneq ($(CONFIG_USE_MUSL),)
+  TARGET_CFLAGS += -D_LARGEFILE64_SOURCE
+endif
 
 define Package/crowdsec/install
 	$(call GoPackage/Package/Install/Bin,$(1))

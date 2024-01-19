@@ -1,15 +1,15 @@
-# Copyright 2021 Stan Grishin (stangri@melmac.ca)
+# Copyright 2021-2023 Stan Grishin (stangri@melmac.ca)
 # This is free software, licensed under the MIT License.
 
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=nebula
-PKG_VERSION:=1.6.1
+PKG_VERSION:=1.8.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/slackhq/nebula/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=9c343d998d2eab9473c3bf73d434b8a382d90b1f73095dd1114ecaf2e1c0970f
+PKG_HASH:=203713c58d0ec8a10df2f605af791a77a33f825454911ac3a5313ced591547fd
 
 PKG_MAINTAINER:=Stan Grishin <stangri@melmac.ca>
 PKG_LICENSE:=MIT
@@ -51,6 +51,9 @@ define Package/nebula-proto
   TITLE:=nebula-proto
   URL:=https://docs.openwrt.melmac.net/nebula/
   DEPENDS:=nebula
+	DEPENDS+=+!BUSYBOX_DEFAULT_AWK:gawk
+	DEPENDS+=+!BUSYBOX_DEFAULT_GREP:grep
+	DEPENDS+=+!BUSYBOX_DEFAULT_SED:sed
   PKGARCH:=all
 endef
 
@@ -60,6 +63,8 @@ define Package/nebula-service
   TITLE:=nebula-service
   URL:=https://docs.openwrt.melmac.net/nebula/
   DEPENDS:=nebula
+	DEPENDS+=+!BUSYBOX_DEFAULT_AWK:gawk
+	DEPENDS+=+!BUSYBOX_DEFAULT_SED:sed
 	CONFLICTS:=nebula-proto
   PKGARCH:=all
 endef
@@ -69,28 +74,28 @@ define Build/Compile
 endef
 
 define Package/nebula/description
-  Nebula is a scalable overlay networking tool with a focus on performance, simplicity
-  and security. It lets you seamlessly connect computers anywhere in the world.
-  This package contains only nebula binary. Unless you want to start nebula manually,
-  you may want to also install *either* 'nebula-service' *or* 'nebula-proto' package.
+Nebula is a scalable overlay networking tool with a focus on performance, simplicity
+and security. It lets you seamlessly connect computers anywhere in the world.
+This package contains only nebula binary. Unless you want to start nebula manually,
+you may want to also install *either* 'nebula-service' *or* 'nebula-proto' package.
 endef
 
 define Package/nebula-cert/description
-  Nebula is a scalable overlay networking tool with a focus on performance, simplicity
-  and security. It lets you seamlessly connect computers anywhere in the world.
-  This package contains only nebula-cert binary.
+Nebula is a scalable overlay networking tool with a focus on performance, simplicity
+and security. It lets you seamlessly connect computers anywhere in the world.
+This package contains only nebula-cert binary.
 endef
 
 define Package/nebula-proto/description
-  Nebula is a scalable overlay networking tool with a focus on performance, simplicity
-  and security. It lets you seamlessly connect computers anywhere in the world.
-  This package contains only OpenWrt protocol/interface support for nebula.
+Nebula is a scalable overlay networking tool with a focus on performance, simplicity
+and security. It lets you seamlessly connect computers anywhere in the world.
+This package contains only OpenWrt protocol/interface support for nebula.
 endef
 
 define Package/nebula-service/description
-  Nebula is a scalable overlay networking tool with a focus on performance, simplicity
-  and security. It lets you seamlessly connect computers anywhere in the world.
-  This package contains only OpenWrt-specific init.d script for nebula.
+Nebula is a scalable overlay networking tool with a focus on performance, simplicity
+and security. It lets you seamlessly connect computers anywhere in the world.
+This package contains only OpenWrt-specific init.d script for nebula.
 endef
 
 define Package/nebula/install

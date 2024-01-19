@@ -175,6 +175,11 @@ config NGINX_HTTP_V2
 	prompt "Enable HTTP_V2 module"
 	default y
 
+config NGINX_HTTP_QUIC
+	bool
+	prompt "Enable QUIC support"
+	default n
+
 config NGINX_PCRE
 	bool
 	prompt "Enable PCRE library usage"
@@ -195,27 +200,9 @@ config NGINX_HTTP_SUB
 	prompt "Enable HTTP sub module"
 	default n
 
-config NGINX_STREAM_CORE_MODULE
+config NGINX_STREAM_REAL_IP
 	bool
-	prompt "Enable stream support"
-	help
-		Add support for NGINX request streaming.
-	default n
-
-config NGINX_STREAM_SSL_MODULE
-	bool
-	prompt "Enable stream support with SSL/TLS termination"
-	depends on NGINX_STREAM_CORE_MODULE
-	help
-		Add support for NGINX request streaming with SSL/TLS termination.
-	default n
-
-config NGINX_STREAM_SSL_PREREAD_MODULE
-	bool
-	prompt "Enable stream support with SSL/TLS pre-read"
-	depends on NGINX_STREAM_CORE_MODULE
-	help
-		Add support for NGINX request streaming using information from the ClientHello message without terminating SSL/TLS.
+	prompt "Enable STREAM real ip module"
 	default n
 
 endmenu

@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=pdns-recursor
-PKG_VERSION:=4.8.4
+PKG_VERSION:=4.9.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://downloads.powerdns.com/releases/
-PKG_HASH:=f0a63fd08e03da82fa20d333ea5179d1b9259f4264546cf4995286677d9458c7
+PKG_HASH:=4cb8180458ecfb528a3d9a34ba2844b6cd2ed69ca1c461dde24a0ebd66829144
 
 PKG_MAINTAINER:=Peter van Dijk <peter.van.dijk@powerdns.com>
 PKG_LICENCE:=GPL-2.0-only
@@ -35,7 +35,7 @@ define Package/pdns-recursor/description
 endef
 
 define Package/pdns-recursor/conffiles
-/etc/powerdns/pdns-recursor.conf
+/etc/powerdns/recursor.conf
 /etc/init.d/pdns-recursor
 endef
 

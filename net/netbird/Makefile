@@ -1,12 +1,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=netbird
-PKG_VERSION:=0.14.5
+PKG_VERSION:=0.25.2
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/netbirdio/netbird/tar.gz/v$(PKG_VERSION)?
-PKG_HASH:=2ea6be9c50a5ac241fbae35934c9c710697de39e8a0393f8e1800285a7904d0d
+PKG_HASH:=8a2f509a9f945168fc7b40a23f970de3623356e01fa91dc780dd4a26521944b7
 
 PKG_MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
 PKG_LICENSE:=BSD-3-Clause
@@ -18,7 +18,7 @@ PKG_BUILD_FLAGS:=no-mips16
 
 GO_PKG:=github.com/netbirdio/netbird
 GO_PKG_BUILD_PKG:=$(GO_PKG)/client
-GO_PKG_LDFLAGS_X:=$(GO_PKG)/client/system.version=$(PKG_VERSION)
+GO_PKG_LDFLAGS_X:=$(GO_PKG)/version.version=$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 include ../../lang/golang/golang-package.mk
@@ -33,12 +33,22 @@ define Package/netbird
 endef
 
 define Package/netbird/description
-  NetBird is an open-source VPN management platform built on top of WireGuard® making it easy to create 
+  NetBird is an open-source VPN management platform built on top of WireGuard® making it easy to create
   secure private networks for your organization or home.
 
-  It requires zero configuration effort leaving behind the hassle of opening ports, complex firewall rules, VPN 
+  It requires zero configuration effort leaving behind the hassle of opening ports, complex firewall rules, VPN
   gateways, and so forth.
 endef
+
+define Package/netbird/conffiles
+/etc/netbird/config.json
+endef
+
+# Workaround for musl 1.2.4 compability in mattn/go-sqlite3
+# https://github.com/mattn/go-sqlite3/issues/1164
+ifneq ($(CONFIG_USE_MUSL),)
+	TARGET_CFLAGS += -D_LARGEFILE64_SOURCE
+endif
 
 define Package/netbird/install
 	$(call GoPackage/Package/Install/Bin,$(PKG_INSTALL_DIR))

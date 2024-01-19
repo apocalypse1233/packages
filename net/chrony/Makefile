@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=chrony
-PKG_VERSION:=4.3
-PKG_RELEASE:=2
+PKG_VERSION:=4.5
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
-PKG_SOURCE_URL:=https://download.tuxfamily.org/chrony/
-PKG_HASH:=9d0da889a865f089a5a21610ffb6713e3c9438ce303a63b49c2fb6eaff5b8804
+PKG_SOURCE_URL:=https://chrony-project.org/releases/
+PKG_HASH:=19fe1d9f4664d445a69a96c71e8fdb60bcd8df24c73d1386e02287f7366ad422
 
 PKG_MAINTAINER:=Miroslav Lichvar <mlichvar0@gmail.com>
 PKG_LICENSE:=GPL-2.0
@@ -85,6 +85,7 @@ define Package/chrony/install
 	$(INSTALL_DIR) $(1)/usr/sbin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/chronyd $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/chronyc $(1)/usr/bin
+	$(INSTALL_BIN) ./files/chrony.ntp-hotplug $(1)/usr/sbin/chrony-hotplug
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DIR) $(1)/etc/chrony

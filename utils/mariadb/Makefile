@@ -9,13 +9,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=mariadb
-PKG_VERSION:=10.9.3
+PKG_VERSION:=10.9.8
 PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL := https://archive.mariadb.org/$(PKG_NAME)-$(PKG_VERSION)/source
 
-PKG_HASH:=9a1e229972fcccc8270e633f68d3fb824da151dcf4f53da1df8d947aca876bee
+PKG_HASH:=fcdc6f73882477c20310e795a02f746e54934aa7a8b368900bd45e78a5daf6ed
 PKG_MAINTAINER:=Michal Hrusecky <Michal@Hrusecky.net>
 PKG_LICENSE:=GPL-2.0-only
 PKG_LICENSE_FILES:=COPYING THIRDPARTY
@@ -177,6 +177,10 @@ MARIADB_COMMON_DEPENDS := \
 # Pass CPPFLAGS in the CFLAGS as otherwise the build system will
 # ignore them.
 TARGET_CFLAGS+=$(TARGET_CPPFLAGS)
+
+ifneq ($(CONFIG_USE_MUSL),)
+  TARGET_CFLAGS += -D_LARGEFILE64_SOURCE
+endif
 
 define Package/mariadb/disable/engine
 	echo > $(1)/storage/$(2)/CMakeLists.txt
