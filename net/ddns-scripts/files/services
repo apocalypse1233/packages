@@ -69,7 +69,7 @@
 
 "dnsever.com"		"http://[USERNAME]:[PASSWORD]@dyna.dnsever.com/update.php?host[[DOMAIN]]"
 
-"dnsexit.com"		"http://update.dnsexit.com/RemoteUpdate.sv?login=[USERNAME]&password=[PASSWORD]&host=[DOMAIN]&myip=[IP]"
+"dnsexit.com"		"http://update.dnsexit.com/RemoteUpdate.sv?login=[USERNAME]&password=[PASSWORD]&host=[DOMAIN]&myip=[IP]&force=Y"
 
 "dnshome.de"		"http://[USERNAME]:[PASSWORD]@www.dnshome.de/dyndns.php?hostname=[DOMAIN]&ip=[IP]"
 
