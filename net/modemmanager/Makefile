@@ -8,12 +8,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=modemmanager
-PKG_SOURCE_VERSION:=1.22.0
-PKG_RELEASE:=7
+PKG_VERSION:=1.22.0
+PKG_RELEASE:=13
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://gitlab.freedesktop.org/mobile-broadband/ModemManager.git
-PKG_MIRROR_HASH:=98daa1a15075c88afb3ed0de20dc83fe51d2ba3c66318ce3f731da4616a2e192
+PKG_SOURCE_VERSION:=$(PKG_VERSION)
+PKG_MIRROR_HASH:=11af92027970f1f0cb5d3016e3c62485399a6bbb81621723016b8b9a561af020
 
 PKG_MAINTAINER:=Nicholas Smith <nicholas@nbembedded.com>
 PKG_LICENSE:=GPL-2.0-or-later
@@ -92,6 +93,7 @@ define Package/modemmanager/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/ModemManager $(1)/usr/sbin
 	$(INSTALL_BIN) ./files/usr/sbin/ModemManager-wrapper $(1)/usr/sbin
+	$(INSTALL_BIN) ./files/usr/sbin/ModemManager-monitor $(1)/usr/sbin
 
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/mmcli $(1)/usr/bin
@@ -100,7 +102,8 @@ define Package/modemmanager/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/libmm-glib.so.* $(1)/usr/lib
 
 	$(INSTALL_DIR) $(1)/usr/lib/ModemManager/connection.d
-	$(INSTALL_BIN) ./files/10-report-down $(1)/usr/lib/ModemManager/connection.d
+	$(INSTALL_BIN) ./files/usr/lib/ModemManager/connection.d/10-report-down \
+		$(1)/usr/lib/ModemManager/connection.d
 
 	$(INSTALL_DIR) $(1)/etc/dbus-1/system.d
 	$(INSTALL_CONF) $(PKG_INSTALL_DIR)/etc/dbus-1/system.d/org.freedesktop.ModemManager1.conf $(1)/etc/dbus-1/system.d
@@ -110,28 +113,31 @@ define Package/modemmanager/install
 
 	$(INSTALL_DIR) $(1)/usr/share/ModemManager
 	$$(if $$(wildcard $(PKG_INSTALL_DIR)/usr/share/ModemManager/*.conf),$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/share/ModemManager/*.conf $(1)/usr/share/ModemManager,)
-	$(INSTALL_DATA) ./files/modemmanager.common $(1)/usr/share/ModemManager
+	$(INSTALL_DATA) ./files/usr/share/ModemManager/modemmanager.common \
+		$(1)/usr/share/ModemManager
 
 	$(INSTALL_DIR) $(1)/usr/share/ModemManager/fcc-unlock.available.d
 	$(INSTALL_DATA) $(PKG_INSTALL_DIR)/usr/share/ModemManager/fcc-unlock.available.d/* $(1)/usr/share/ModemManager/fcc-unlock.available.d
 
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) ./files/modemmanager.init $(1)/etc/init.d/modemmanager
-
-	$(INSTALL_DIR) $(1)/etc/hotplug.d/usb
-	$(INSTALL_DATA) ./files/25-modemmanager-usb $(1)/etc/hotplug.d/usb
+	$(INSTALL_BIN) ./files/etc/init.d/modemmanager \
+		$(1)/etc/init.d/modemmanager
 
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/net
-	$(INSTALL_DATA) ./files/25-modemmanager-net $(1)/etc/hotplug.d/net
+	$(INSTALL_DATA) ./files/etc/hotplug.d/net/25-modemmanager-net \
+		$(1)/etc/hotplug.d/net
 
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/tty
-	$(INSTALL_DATA) ./files/25-modemmanager-tty $(1)/etc/hotplug.d/tty
+	$(INSTALL_DATA) ./files/etc/hotplug.d/tty/25-modemmanager-tty \
+		$(1)/etc/hotplug.d/tty
 
 	$(INSTALL_DIR) $(1)/etc/hotplug.d/wwan
-	$(INSTALL_DATA) ./files/25-modemmanager-wwan $(1)/etc/hotplug.d/wwan
+	$(INSTALL_DATA) ./files/etc/hotplug.d/wwan/25-modemmanager-wwan \
+		$(1)/etc/hotplug.d/wwan
 
 	$(INSTALL_DIR) $(1)/lib/netifd/proto
-	$(INSTALL_BIN) ./files/modemmanager.proto $(1)/lib/netifd/proto/modemmanager.sh
+	$(INSTALL_BIN) ./files/lib/netifd/proto/modemmanager.sh \
+		$(1)/lib/netifd/proto
 endef
 
 $(eval $(call BuildPackage,modemmanager))
