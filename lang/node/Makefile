@@ -8,12 +8,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=node
-PKG_VERSION:=v20.13.1
+PKG_VERSION:=v20.15.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://nodejs.org/dist/$(PKG_VERSION)
-PKG_HASH:=a85ee53aa0a5c2f5ca94fa414cdbceb91eb7d18a77fc498358512c14cc6c6991
+PKG_HASH:=01e2c034467a324a33e778c81f2808dff13d289eaa9307d3e9b06c171e4d932d
 
 PKG_MAINTAINER:=Hirokazu MORIKAWA <morikw2@gmail.com>, Adrian Panella <ianchi74@outlook.com>
 PKG_LICENSE:=MIT
