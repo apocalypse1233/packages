@@ -1,0 +1,91 @@
+#!/bin/sh /etc/rc.common
+
+EXTRA_COMMANDS="backup restore"
+EXTRA_HELP=<<EOF
+        backup  Backup vnstat database
+        restore Restore vnstat database
+EOF
+
+START=98
+STOP=10
+
+vnstat_option() {
+	sed -ne "s/^[[:space:]]*$1[[:space:]]*['\"]\([^'\"]*\)['\"].*/\1/p" /etc/vnstat.conf
+}
+
+LOGGER_TAG=vnstat_backup
+VNSTAT_DIR="$(vnstat_option DatabaseDir)"
+
+server_config() {
+        sed -ne "s/^[[:space:]]*$1[:=]*\([^'\"]*\).*/\1/p" /etc/vnstat_backup.conf
+}
+
+REMOTE="$(server_config remote)"
+SERVERIP="$(server_config ftp_server)"
+PORT="$(server_config port)"
+USERNAME="$(server_config username)"
+PASSWORD="$(server_config password)"
+FTP_PATH="$(server_config ftp_path)"
+FILENAME="$(server_config filename)"
+LOCAL_PATH="$(server_config local_path)"
+
+backup_database() {
+if [ $REMOTE == yes ]; then
+	if [ ! -d $VNSTAT_DIR ]; then
+		logger -t $LOGGER_TAG -p err "cannot backup, data directory $VNSTAT_DIR does not exist (yet)"
+	else
+		logger -t $LOGGER_TAG -p info "remote backing up database"
+		/bin/tar -zcf /tmp/$FILENAME'.tar.gz' -C $VNSTAT_DIR .
+                logger -t $LOGGER_TAG -p info "uploading backup to ftp"
+                lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; put -e -E -O $FTP_PATH /tmp/$FILENAME'.tar.gz'"
+	fi
+else
+	if [ ! -d $VNSTAT_DIR ]; then
+		logger -t $LOGGER_TAG -p err "cannot backup, data directory $VNSTAT_DIR does not exist (yet)"
+	else
+		logger -t $LOGGER_TAG -p info "local backing up database"
+		/bin/tar -zcf $LOCAL_PATH$FILENAME'.tar.gz' -C $VNSTAT_DIR .
+	fi
+fi
+}
+
+restore_database() {
+if [ $REMOTE == yes ]; then
+        lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; find $FTP_PATH$FILENAME'.tar.gz'"
+        if [ $? -ne 0 ]; then
+		logger -t $LOGGER_TAG -p err "cannot restore, backup file does not exist (yet)"
+	else
+                logger -t $LOGGER_TAG -p info "downloading backup from ftp"
+                lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; get $FTP_PATH$FILENAME'.tar.gz' -o /tmp/$FILENAME'.tar.gz'"
+		logger -t $LOGGER_TAG -p info "restoring remote database"
+		[ ! -d $VNSTAT_DIR ] && mkdir $VNSTAT_DIR
+		/bin/tar -xzf /tmp/$FILENAME'.tar.gz' -C $VNSTAT_DIR && rm /tmp/$FILENAME'.tar.gz'
+	fi
+else
+
+	if [ ! -f $LOCAL_PATH$FILENAME'.tar.gz' ]; then
+		logger -t $LOGGER_TAG -p err "cannot restore, backup file does not exist (yet)"
+	else
+		logger -t $LOGGER_TAG -p info 'restoring local database'
+		[ ! -d $VNSTAT_DIR ] && mkdir $VNSTAT_DIR
+		/bin/tar -xzf $LOCAL_PATH$FILENAME'.tar.gz' -C $VNSTAT_DIR
+	fi
+fi
+}
+
+start() {
+	restore_database
+}
+
+stop() {
+	backup_database
+}
+
+backup() {
+	backup_database
+}
+
+restore() {
+	restore_database
+}
+
