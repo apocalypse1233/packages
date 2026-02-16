@@ -6,19 +6,19 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=boinc
-PKG_VERSION:=7.24.3
+PKG_VERSION:=8.0.4
 PKG_VERSION_SHORT:=$(shell echo $(PKG_VERSION)| cut -f1,2 -d.)
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/BOINC/boinc
 PKG_SOURCE_VERSION:=client_release/$(PKG_VERSION_SHORT)/$(PKG_VERSION)
-PKG_MIRROR_HASH:=568a87739949e018c3a0ab0b72ba887b82bfc1b91a060f1cf1266dbfe0a5f81b
+PKG_MIRROR_HASH:=9482abc4fae339bd28b9101987574f52c46bd426967a224173cdd89deb73ef4e
 
 PKG_MAINTAINER:=Christian Dreihsig <christian.dreihsig@t-online.de>, Steffen Moeller <moeller@debian.org>
 PKG_LICENSE:=GPL-3.0-or-later
 PKG_LICENSE_FILES:=COPYING
-PKG_CPE_ID:=cpe:/a:rom_walton:boinc
+PKG_CPE_ID:=cpe:/a:universityofcalifornia:boinc_client
 
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=0

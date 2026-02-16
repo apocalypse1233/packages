@@ -6,13 +6,13 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=owut
-PKG_SOURCE_DATE:=2024-07-01
+PKG_SOURCE_DATE:=2026-01-13
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
-PKG_SOURCE_VERSION:=189b27210ff32ac0a75c92fb0501d6674786d0fb
+PKG_SOURCE_VERSION:=2526d84be888d5c4bcc65e42fc03a7a8ac6276f1
 PKG_SOURCE_URL:=https://github.com/efahl/owut.git
-PKG_MIRROR_HASH:=d9065d8063d527d76c928c6670a17171cfe5d8dd479f873bf17c220e2ada1b2a
+PKG_MIRROR_HASH:=1bebd070d64614f6c89567e29382fe0f8e15b5afebf21fa1bc724cb4a0a5bd69
 
 PKG_MAINTAINER:=Eric Fahlgren <ericfahlgren@gmail.com>
 PKG_LICENSE:=GPL-2.0-only
@@ -29,6 +29,7 @@ define Package/owut
     +ucode +ucode-mod-fs +ucode-mod-ubus \
     +ucode-mod-uci +ucode-mod-uclient +ucode-mod-uloop
   PKGARCH:=all
+  DEFAULT:=y if (BUILDBOT && !SMALL_FLASH)
 endef
 
 define Package/owut/description
@@ -47,9 +48,16 @@ endef
 define Build/Compile
 endef
 
+define Package/owut/conffiles
+/etc/owut.d/
+endef
+
 define Package/owut/install
 	$(INSTALL_DIR) $(1)/etc/uci-defaults
-	$(INSTALL_CONF) $(PKG_BUILD_DIR)/files/owut.defaults $(1)/etc/uci-defaults/attendedsysupgrade-owut
+	$(INSTALL_CONF) $(PKG_BUILD_DIR)/files/owut.defaults $(1)/etc/uci-defaults/51-attendedsysupgrade-owut
+
+	$(INSTALL_DIR) $(1)/etc/owut.d
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/files/pre-install.sh $(1)/etc/owut.d/pre-install.sh
 
 	$(INSTALL_DIR) $(1)/usr/share/ucode/utils
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/files/argparse.uc $(1)/usr/share/ucode/utils
@@ -58,6 +66,7 @@ define Package/owut/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/files/owut $(1)/usr/bin
 
 	sed -i -e "s/%%VERSION%%/$(PKG_VERSION)-r$(PKG_RELEASE)/" $(1)/usr/bin/owut
+	sed -i -e "s/%%VERSION%%/$(PKG_VERSION)-r$(PKG_RELEASE)/" $(1)/usr/share/ucode/utils/argparse.uc
 endef
 
 $(eval $(call BuildPackage,owut))
