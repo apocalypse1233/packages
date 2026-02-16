@@ -10,12 +10,12 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=haproxy
-PKG_VERSION:=3.0.9
+PKG_VERSION:=3.0.16
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://www.haproxy.org/download/3.0/src
-PKG_HASH:=7dc731b681b7aa93dc23aa36b85fa7b91bb1cf53faaca97404544ea454acecad
+PKG_HASH:=973c0583da3c025dd665606a0ef6c0c80e00398389dd90c01973a3379e55e3b8
 
 PKG_MAINTAINER:=Thomas Heil <heil@terminal-consulting.de>, \
 		Christian Lachner <gladiac@gmail.com>
@@ -68,16 +68,11 @@ define Package/haproxy-nossl/description
  This package is built without SSL support.
 endef
 
-TARGET=linux-glibc
+TARGET=linux-musl
 ENABLE_LUA:=y
 
-ifeq ($(CONFIG_USE_UCLIBC),y)
-	ADDON+=USE_BACKTRACE=
-	ADDON+=USE_LIBCRYPT=
-endif
-
-ifeq ($(CONFIG_USE_MUSL),y)
-	TARGET=linux-musl
+ifeq ($(CONFIG_USE_GLIBC),y)
+	TARGET=linux-glibc
 endif
 
 ifeq ($(BUILD_VARIANT),ssl)

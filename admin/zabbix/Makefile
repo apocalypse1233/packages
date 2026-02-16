@@ -8,15 +8,15 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zabbix
-PKG_VERSION:=7.0.0
+PKG_VERSION:=7.0.21
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://cdn.zabbix.com/zabbix/sources/stable/$(basename $(PKG_VERSION))/ \
 	https://cdn.zabbix.com/zabbix/sources/oldstable/$(basename $(PKG_VERSION))/
-PKG_HASH:=520641483223f680ef6e685284b556ba34a496d886a38dc3bca085cde21031b1
+PKG_HASH:=a7f82c1610bc02e4ac42f5257c0265f92e32b51fb5e04b4ad29f72e97189d3ef
 
-PKG_MAINTAINER:=Etienne CHAMPETIER <champetier.etienne@gmail.com>
+PKG_MAINTAINER:=Daniel F. Dickinson <dfdpublic@wildtechgarden.ca>
 PKG_LICENSE:=AGPL-3.0-only
 PKG_LICENSE_FILES:=COPYING
 PKG_CPE_ID:=cpe:/a:zabbix:zabbix
@@ -159,6 +159,7 @@ define Package/zabbix-server/Default
     @(!ZABBIX_SQLITE) \
     +libevent2 \
     +libevent2-pthreads \
+    +libevent2-extra \
     +fping
 endef
 
@@ -212,6 +213,7 @@ define Package/zabbix-proxy/Default
     +ZABBIX_SQLITE:libsqlite3 \
     +libevent2 \
     +libevent2-pthreads \
+    +libevent2-extra \
     +fping
 endef
 
@@ -276,9 +278,6 @@ endif
 ifeq ($(BUILD_VARIANT),gnutls)
 	CONFIGURE_ARGS+= --with-gnutls="$(STAGING_DIR)/usr"
 endif
-
-CONFIGURE_VARS += \
-	ac_cv_header_sys_sysinfo_h=no
 
 MAKE_FLAGS += ARCH="linux"
 

@@ -11,7 +11,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=ruby
-PKG_VERSION:=3.3.5
+PKG_VERSION:=3.3.10
 PKG_RELEASE:=1
 
 # First two numbes
@@ -19,7 +19,7 @@ PKG_ABI_VERSION:=$(subst $(space),.,$(wordlist 1, 2, $(subst .,$(space),$(PKG_VE
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://cache.ruby-lang.org/pub/ruby/$(PKG_ABI_VERSION)/
-PKG_HASH:=3781a3504222c2f26cb4b9eb9c1a12dbf4944d366ce24a9ff8cf99ecbce75196
+PKG_HASH:=b555baa467a306cfc8e6c6ed24d0d27b27e9a1bed1d91d95509859eac6b0e928
 PKG_MAINTAINER:=Luiz Angelo Daros de Luca <luizluca@gmail.com>
 PKG_LICENSE:=BSD-2-Clause
 PKG_LICENSE_FILES:=COPYING
@@ -49,7 +49,7 @@ HOST_CONFIGURE_ARGS += \
 	--disable-yjit \
 	--without-gmp \
 	--with-static-linked-ext \
-	--with-out-ext=-test-/*,bigdecimal,cgi/escape,continuation,coverage,etc,fcntl,fiddle,io/console,json,json/generator,json/parser,mathn/complex,mathn/rational,nkf,objspace,pty,racc/cparse,rbconfig/sizeof,readline,rubyvm,syslog,win32,win32ole,win32/resolv
+	--with-out-ext=-test-/*,bigdecimal,cgi/escape,continuation,coverage,etc,fcntl,fiddle,io/console,mathn/complex,mathn/rational,nkf,objspace,pty,racc/cparse,rbconfig/sizeof,readline,rubyvm,syslog,win32,win32ole,win32/resolv
 
 HOST_BUILD_DEPENDS:=yaml/host
 
