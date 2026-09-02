@@ -2,8 +2,8 @@
 
 EXTRA_COMMANDS="backup restore"
 EXTRA_HELP=<<EOF
-        backup  Backup vnstat database
-        restore Restore vnstat database
+	backup  Backup vnstat database
+	restore Restore vnstat database
 EOF
 
 START=98
@@ -32,31 +32,31 @@ LOCAL_PATH="$(server_config local_path)"
 backup_database() {
 if [ $REMOTE == yes ]; then
 	if [ ! -d $VNSTAT_DIR ]; then
-        logger -t $LOGGER_TAG -p err "cannot backup, data directory $VNSTAT_DIR does not exist (yet)"
+		logger -t $LOGGER_TAG -p err "cannot backup, data directory $VNSTAT_DIR does not exist (yet)"
 	else
-        logger -t $LOGGER_TAG -p info "remote backing up database"
-        /bin/tar -zcf /tmp/$FILENAME'.tar.gz' -C $VNSTAT_DIR .
-        logger -t $LOGGER_TAG -p info "uploading backup to ftp"
-        lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; put -e -E -O $FTP_PATH /tmp/$FILENAME'.tar.gz'"
+		logger -t $LOGGER_TAG -p info "remote backing up database"
+		/bin/tar -zcf /tmp/$FILENAME'.tar.gz' -C $VNSTAT_DIR .
+		logger -t $LOGGER_TAG -p info "uploading backup to ftp"
+		lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; put -e -E -O $FTP_PATH /tmp/$FILENAME'.tar.gz'"
 	fi
 else
 	if [ ! -d $VNSTAT_DIR ]; then
-        logger -t $LOGGER_TAG -p err "cannot backup, data directory $VNSTAT_DIR does not exist (yet)"
+		logger -t $LOGGER_TAG -p err "cannot backup, data directory $VNSTAT_DIR does not exist (yet)"
 	else
-        logger -t $LOGGER_TAG -p info "local backing up database"
-        /bin/tar -zcf $LOCAL_PATH$FILENAME'.tar.gz' -C $VNSTAT_DIR .
+		logger -t $LOGGER_TAG -p info "local backing up database"
+		/bin/tar -zcf $LOCAL_PATH$FILENAME'.tar.gz' -C $VNSTAT_DIR .
 	fi
 fi
 }
 
 restore_database() {
 if [ $REMOTE == yes ]; then
-        lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; find $FTP_PATH$FILENAME'.tar.gz'"
-        if [ $? -ne 0 ]; then
+	lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; find $FTP_PATH$FILENAME'.tar.gz'"
+	if [ $? -ne 0 ]; then
 		logger -t $LOGGER_TAG -p err "cannot restore, backup file does not exist (yet)"
 	else
-        logger -t $LOGGER_TAG -p info "downloading backup from ftp"
-        lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; get $FTP_PATH$FILENAME'.tar.gz' -o /tmp/$FILENAME'.tar.gz'"
+		logger -t $LOGGER_TAG -p info "downloading backup from ftp"
+		lftp -c "open -u $USERNAME,$PASSWORD $SERVERIP -p$PORT ; get $FTP_PATH$FILENAME'.tar.gz' -o /tmp/$FILENAME'.tar.gz'"
 		logger -t $LOGGER_TAG -p info "restoring remote database"
 		[ ! -d $VNSTAT_DIR ] && mkdir $VNSTAT_DIR
 		/bin/tar -xzf /tmp/$FILENAME'.tar.gz' -C $VNSTAT_DIR && rm /tmp/$FILENAME'.tar.gz'
