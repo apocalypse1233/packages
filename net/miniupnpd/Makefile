@@ -31,6 +31,7 @@ define Package/miniupnpd/Default
   CATEGORY:=Network
   DEPENDS:= \
 	+libcap-ng \
+	+curl \
 	+libmnl \
 	+libuuid
   PROVIDES:=miniupnpd
