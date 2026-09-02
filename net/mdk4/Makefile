@@ -28,7 +28,7 @@ define Package/mdk4
   SECTION:=net
   CATEGORY:=Network
   DEPENDS:=+libpthread +libnl +libpcap
-  TITLE:= mdk4
+  TITLE:=mdk4
   URL:=https://github.com/aircrack-ng/mdk4
   SUBMENU:=wireless
 endef
@@ -38,16 +38,16 @@ define Package/mdk4/description
 endef
 
 MAKE_FLAGS += \
-	$(TARGET_CONFIGURE_OPTS)
+  $(TARGET_CONFIGURE_OPTS)
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR)/src \
-		$(TARGET_CONFIGURE_OPTS)
+  $(MAKE) -C $(PKG_BUILD_DIR)/src \
+    $(TARGET_CONFIGURE_OPTS)
 endef
 
 define Package/mdk4/install
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(CP) $(PKG_BUILD_DIR)/src/mdk4 $(1)/usr/sbin/
+  $(INSTALL_DIR) $(1)/usr/sbin
+  $(CP) $(PKG_BUILD_DIR)/src/mdk4 $(1)/usr/sbin/
 endef
 
 $(eval $(call BuildPackage,mdk4))
